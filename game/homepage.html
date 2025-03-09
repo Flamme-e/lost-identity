@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LOST IDENTITY</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Freckle+Face&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
+
+    /* =============== GLOBAL STYLES =============== */
+    /* Background video styling */
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    /* Dark overlay to deepen the atmosphere */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(19, 3, 3, 0.5);
+      z-index: -1;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Freckle Face', cursive;
+      background-size: cover;
+      min-height: 100vh;
+      color: rgba(124, 0, 0, 0.952);
+      height: 100vh;
+    }
+
+    .menu-container {
+      position: absolute;
+      top: 75%;
+      right: 6%;
+      transform: translateY(-50%);
+      text-align: right;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu a {
+      display: block;
+      margin: 10px 0;
+      text-decoration: none;
+      color: rgba(218, 218, 218, 0.87);
+      font-size: 40px;
+      transition: letter-spacing 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+      text-align: left;
+      font-weight: bold;
+      text-shadow: 5px 4px 5px #000000;
+    }
+
+    /* Glow Animation for Menu Links */
+    @keyframes glow {
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 5px rgba(255,0,0,0.7), 0 0 10px rgba(255,0,0,0.5);
+      }
+      50% {
+        transform: scale(1.1);
+        text-shadow: 0 0 15px rgba(255,0,0,1), 0 0 20px rgba(255,0,0,0.8);
+      }
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 5px rgba(255,0,0,0.7), 0 0 10px rgba(255,0,0,0.5);
+      }
+    }
+
+    .menu a:hover {
+      color: red;
+      animation: glow 1s ease-in-out infinite;
+    }
+
+    /* =============== PAGE CONTAINERS =============== */
+    .page-container {
+      display: none; /* Hidden by default; shown via JS */
+      color: #eee;
+      font-size: 22px;
+      width: 100%;
+      height: 100vh;       /* Fill screen for the VN scene */
+      position: relative;  /* So we can position children absolutely if needed */
+      margin: 0;           /* Remove margins */
+      padding: 0;          /* Remove extra padding */
+      overflow: hidden;    /* Hide any overflow */
+    }
+
+    /* =============== MODAL (TRIGGER WARNING) =============== */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 1000; /* On top of everything */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+    }
+    
+    .modal-content {
+      background-color: #9400008a;
+      margin: 15% auto;
+      padding: 30px;
+      border: 3px solid #949494d5;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+      color: #000000;
+      font-family: 'Jolly Lodger', cursive;
+    }
+    
+    .modal-content h2 {
+      margin-top: 0;
+      font-size: 40px;
+      color: rgb(255, 187, 187);
+    }
+    
+    .modal-content p {
+      font-size: 25px; 
+    }
+
+    .modal-buttons {
+      margin-top: 20px;
+    }
+    
+    .modal-buttons button {
+      padding: 15px 20px;
+      margin: 0 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      color: rgb(255, 187, 187);
+      transition: transform 0.2s ease, background-color 0.3s ease;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    .modal-buttons button:hover {
+      animation: pulse 1s infinite;
+    }
+
+    /* =============== VISUAL NOVEL SCENE =============== */
+    /*FIRST SCENE*/
+    .cubicle {
+      width: 100%;
+      height: 100%;
+      position: absolute; /* Fill the container */
+      top: 0;
+      left: 0;
+      z-index: -1; /* Place behind the text box */
+    }
+
+    .cubicle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Fill the container properly */
+      display: block;
+    }
+
+    /* Dialogue Box at the bottom */
+    .dialogue-box {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.7); /* Semi-transparent black */
+      color: #fff;
+      padding: 40px;
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 32px;
+      text-align: justify;
+      text-shadow: 1px 1px 2px #000;
+      box-sizing: border-box;
+    }
+
+    .dialogue-box p {
+      margin-bottom: 3px;
+    }
+
+    .dialogue-box .internal {
+      font-style: italic;
+    }
+
+    /* Minimal Cursor - No visible box, just an arrow entity */
+    .next-cursor {
+      position: absolute;
+      top: 20px;
+      right: 40px;  /* adjust as needed */
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 40px; /* make the arrow bigger or smaller */
+      background: none;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      transition: transform 0.3s;
+      user-select: none;
+    }
+
+    .next-cursor:hover {
+      transform: scale(1.2);
+    }
+
+    /* =============== ADDED: Centering Choice Buttons for Scene 2 =============== */
+    /* For choices on next-page (Scene 2) */
+    #next-page .choice-container {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    #next-page .choice {
+      display: block;
+      margin: 15px auto;
+      background: rgba(170, 0, 0, 0.7);
+      color: #000;
+      border: 2px solid #fff;
+      border-radius: 5px;
+      font-size: 20px;
+      padding: 10px 30px;
+      cursor: pointer;
+      min-width: 300px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    #next-page .choice:hover {
+      transform: scale(1.05);
+      background: rgb(129, 24, 39);
+    }
+    
+    /* For choices on fourth-page (Scene 3) - same as above */
+    #fourth-page .choice-container {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    #fourth-page .choice {
+      display: block;
+      margin: 15px auto;
+      background: rgba(170, 0, 0, 0.7);
+      color: #000;
+      border: 2px solid #fff;
+      border-radius: 5px;
+      font-size: 20px;
+      padding: 10px 30px;
+      cursor: pointer;
+      min-width: 300px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    #fourth-page .choice:hover {
+      transform: scale(1.05);
+      background: rgb(129, 24, 39);
+    }
+    
+    /* =============== ADDED: Next Cursor for Outcome Pages =============== */
+    #outcome-page .next-cursor,
+    #outcome-page2 .next-cursor {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 40px;
+      background: none;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      transition: transform 0.3s;
+      user-select: none;
+    }
+    
+    #outcome-page .next-cursor:hover,
+    #outcome-page2 .next-cursor:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Video -->
+  <video loop autoplay muted src="final.mp4"></video>
+
+  <!-- Homepage Container -->
+  <div id="home-container">
+    <div class="menu-container">
+      <div class="menu">
+        <a href="#" id="play-btn">PLAY</a>
+        <a href="#" id="gallery-btn">GALLERY</a>
+        <a href="#" id="about-btn">ABOUT</a>
+        <a href="#" id="tutorials-btn">TUTORIALS</a>
+        <a href="#" id="settings-btn">SETTINGS</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trigger Warning Modal -->
+  <div id="trigger-warning-modal" class="modal">
+    <div class="modal-content">
+      <h2>Trigger Warning</h2>
+      <p>
+        This visual novel contains themes and imagery that may be distressing for some players. 
+        The content includes references to graphic violence, death, and body dissolution through chemical means, 
+        as well as elements of psychological horror and supernatural phenomena. 
+        If you are sensitive to or triggered by depictions of violence, body horror, or traumatic events, 
+        please proceed with caution.
+      </p>
+      <div class="modal-buttons">
+        <button id="continue-btn">Continue</button>
+        <button id="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAY CONTAINER (Visual Novel Scene) -->
+  <div id="play-container" class="page-container">
+    <!-- The library background filling the scene -->
+    <div class="cubicle">
+      <img src="library.jpg" alt="library background">
+    </div>
+    
+    <!-- Dialogue Box at the bottom -->
+    <div class="dialogue-box">
+      <p>A chill runs down your spine as an inexplicable pull urges you to dig deeper into this long-forgotten mystery. Every whispered legend about the missing girl—the one always referred to as Lyris—has echoed in your life like a forbidden secret.</p>
+      <!-- Minimal Arrow Cursor (no visible box) -->
+      <div class="next-cursor" id="next-btn">&#9658;</div>
+    </div>
+  </div>
+
+  <!-- NEXT PAGE Container (Scene 2) -->
+  <div id="next-page" class="page-container">
+    <div class="cubicle">
+      <img src="library2.jpg" alt="Another background">
+    </div>
+  
+    <!-- Dialogue Box remains unchanged at the bottom -->
+    <div class="dialogue-box">
+      <p class="internal">Why does this story haunt me? Is there something I'm missing?</p>
+    </div>
+    
+    <!-- Choice Buttons (centered on the background) -->
+    <div class="choice-container">
+      <button class="choice" id="choice1">Eavesdrop Closer</button>
+      <button class="choice" id="choice2">Observe from Afar</button>
+    </div>
+  </div>
+
+  <!-- OUTCOME PAGE Container (Outcome of choices 1 & 2) -->
+  <div id="outcome-page" class="page-container">
+    <div class="cubicle">
+      <img src="outcome.jpg" alt="Outcome background">
+    </div>
+    <div class="dialogue-box">
+      <p id="outcome-text" class="internal">[Outcome text goes here]</p>
+      <!-- Next Cursor for Outcome Page -->
+      <div class="next-cursor" id="outcome-next-btn">&#9658;</div>
+    </div>
+  </div>
+  
+  <!-- FOURTH PAGE Container (Scene 3 with choices 3 & 4) -->
+  <div id="fourth-page" class="page-container">
+    <div class="cubicle">
+      <img src="fourth.jpg" alt="Fourth page background">
+    </div>
+    <!-- Dialogue Box remains unchanged at the bottom -->
+    <div class="dialogue-box">
+      <p class="internal">Suddenly, your eyes lock onto a page where a photograph has been torn out—so badly ripped that the girl's face is nearly unrecognizable. Yet, beneath the smudged image, one name stands out: <strong>Sinclair</strong>.</p>
+    </div>
+    <!-- Choice Buttons (centered on the background) for choices 3 & 4 -->
+    <div class="choice-container">
+      <button class="choice" id="choice3">Examine the Torn Page Closely</button>
+      <button class="choice" id="choice4">File It for Later</button>
+    </div>
+  </div>
+
+  <!-- OUTCOME PAGE 2 Container (Outcome of choices 3 & 4) -->
+  <div id="outcome-page2" class="page-container">
+    <div class="cubicle">
+      <img src="outcome2.jpg" alt="Outcome 2 background">
+    </div>
+    <div class="dialogue-box">
+      <p id="outcome2-text" class="internal">[Outcome text for choices 3 & 4 goes here]</p>
+      <!-- Next Cursor for Outcome Page 2 -->
+      <div class="next-cursor" id="outcome2-next-btn">&#9658;</div>
+    </div>
+  </div>
+  
+  <!-- THIRD PAGE Container (Linked from Outcome Page 2's next cursor) -->
+  <div id="third-page" class="page-container">
+    <div class="cubicle">
+      <img src="third.jpg" alt="Third page background">
+    </div>
+    <div class="dialogue-box">
+      <p id="third-text" class="internal">The next day, you return to the library. Dust lingers in the air as you pull an old yearbook from the shelf, its pages fragile beneath your fingers. You flip through, scanning faces frozen in time—until you find it.</p>
+      <!-- Next Cursor for Third Page (optional) -->
+      <div class="next-cursor" id="third-next-btn">&#9658;</div>
+    </div>
+  </div>
+  
+  <!-- FIFTH PAGE Container (New page linked from Outcome Page 2's next cursor) -->
+  <div id="fifth-page" class="page-container">
+    <div class="cubicle">
+      <img src="fifth.jpg" alt="Fifth page background">
+    </div>
+    <div class="dialogue-box">
+      <p id="fifth-text" class="internal">[Fifth page outcome text goes here]</p>
+      <!-- Next Cursor for Fifth Page (optional) -->
+      <div class="next-cursor" id="fifth-next-btn">&#9658;</div>
+    </div>
+  </div>
+
+  <!-- Other Pages -->
+  <div id="gallery-container" class="page-container">
+    <h2>Gallery Page</h2>
+    <p>This is the gallery page content.</p>
+  </div>
+  <div id="about-container" class="page-container">
+    <h2>About Page</h2>
+    <p>This is the about page content.</p>
+  </div>
+  <div id="tutorials-container" class="page-container">
+    <h2>Tutorials Page</h2>
+    <p>This is the tutorials page content.</p>
+  </div>
+  <div id="settings-container" class="page-container">
+    <h2>Settings Page</h2>
+    <p>This is the settings page content.</p>
+  </div>
+
+  <script>
+    // Show a specific page container and hide others
+    function showPage(pageId) {
+      // Hide homepage
+      document.getElementById('home-container').style.display = 'none';
+      // Hide all page containers
+      const pages = document.getElementsByClassName('page-container');
+      for (let i = 0; i < pages.length; i++) {
+        pages[i].style.display = 'none';
+      }
+      // Show the chosen container
+      document.getElementById(pageId).style.display = 'block';
+      
+      // Typewriter effect for each <p> inside dialogue-box of the new page
+      const paragraphs = document.querySelectorAll(`#${pageId} .dialogue-box p`);
+      paragraphs.forEach(function(p) {
+        if (!p.getAttribute('data-fulltext')) {
+          p.setAttribute('data-fulltext', p.textContent);
+        }
+        p.textContent = "";
+        typeWriter(p, p.getAttribute('data-fulltext'), 40);
+      });
+    }
+
+    // Typewriter effect function
+    function typeWriter(element, text, speed, index = 0) {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        setTimeout(function() {
+          typeWriter(element, text, speed, index + 1);
+        }, speed);
+      }
+    }
+
+    // PLAY -> Show Trigger Warning
+    document.getElementById('play-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('trigger-warning-modal').style.display = 'block';
+    });
+
+    // Continue -> Hide modal, show #play-container
+    document.getElementById('continue-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('trigger-warning-modal').style.display = 'none';
+      showPage('play-container');
+    });
+
+    // Cancel -> Hide modal, stay on homepage
+    document.getElementById('cancel-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('trigger-warning-modal').style.display = 'none';
+    });
+
+    // NEXT -> Go to next-page (Scene 2)
+    document.getElementById('next-btn').addEventListener('click', function() {
+      showPage('next-page');
+    });
+
+    // Choice Buttons on Next Page (Scene 2)
+    document.getElementById('choice1').addEventListener('click', function() {
+      // Set outcome text for choice 1
+      document.getElementById('outcome-text').textContent = "You choose to eavesdrop closer. You catch subtle hints about hidden secrets and the enduring legacy of Lyris Sinclair.";
+      showPage('outcome-page');
+    });
+
+    document.getElementById('choice2').addEventListener('click', function() {
+      // Set outcome text for choice 2
+      document.getElementById('outcome-text').textContent = "You decide to observe from afar. The details are vague, yet the mystery continues to grow in your mind.";
+      showPage('outcome-page');
+    });
+
+    // Outcome Page Next Cursor -> Go to Fourth Page (Scene 3)
+    document.getElementById('outcome-next-btn').addEventListener('click', function() {
+      showPage('fourth-page');
+    });
+
+    // Choice Buttons on Fourth Page (Scene 3)
+    document.getElementById('choice3').addEventListener('click', function() {
+      // Set outcome text for choice 3
+      document.getElementById('outcome2-text').textContent = "You choose to examine the torn page closely. A hidden note is revealed, filled with cryptic symbols that hint at a dangerous secret.";
+      showPage('outcome-page2');
+    });
+
+    document.getElementById('choice4').addEventListener('click', function() {
+      // Set outcome text for choice 4
+      document.getElementById('outcome2-text').textContent = "You decide to file it for later. A lingering uncertainty gnaws at you, as if the truth will someday demand to be revealed.";
+      showPage('outcome-page2');
+    });
+
+    // Outcome Page 2 Next Cursor -> Go to Fifth Page (New page for choices 3 & 4 outcome)
+    document.getElementById('outcome2-next-btn').addEventListener('click', function() {
+      showPage('fifth-page');
+    });
+
+    // Fifth Page Next Cursor -> Example: Go to Third Page (or any page you want)
+    document.getElementById('fifth-next-btn').addEventListener('click', function() {
+      showPage('third-page');
+    });
+
+    // Third Page Next Cursor -> Example: Go to Gallery
+    document.getElementById('third-next-btn').addEventListener('click', function() {
+      showPage('gallery-container');
+    });
+
+    // Other menu buttons
+    document.getElementById('gallery-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      showPage('gallery-container');
+    });
+
+    document.getElementById('about-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      showPage('about-container');
+    });
+
+    document.getElementById('tutorials-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      showPage('tutorials-container');
+    });
+
+    document.getElementById('settings-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      showPage('settings-container');
+    });
+  </script>
+</body>
+</html>
